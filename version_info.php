@@ -9,7 +9,7 @@
 
 // set this to the latest version of vpn-user-portal
 // @see https://github.com/eduvpn/vpn-user-portal/releases
-$latestVersion = '2.2.1';
+$latestVersion = '2.2.2';
 
 // discovery files
 $discoFiles = [
