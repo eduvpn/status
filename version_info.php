@@ -9,7 +9,7 @@
 
 // set this to the latest version of vpn-user-portal
 // @see https://github.com/eduvpn/vpn-user-portal/releases
-$latestVersion = '2.2.2';
+$latestVersion = '2.2.3';
 
 // discovery files
 $discoFiles = [
@@ -29,6 +29,11 @@ if (file_exists('other_server_list.txt')) {
         ];
     }
 }
+
+// sort otherServerList by TLD
+usort($otherServerList, function ($a, $b) {
+    return strcmp(strrev($a['base_uri']), strrev($b['base_uri']));
+});
 
 /**
  * @param string $u
