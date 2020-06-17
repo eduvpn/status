@@ -9,7 +9,7 @@
 
 // set this to the latest version of vpn-user-portal
 // @see https://github.com/eduvpn/vpn-user-portal/releases
-$latestVersion = '2.2.5';
+$latestVersion = '2.2.8';
 
 // discovery files
 $discoFiles = [
@@ -147,7 +147,9 @@ $serverList['other'] = $otherServerList;
 
 // now retrieve the info.json file from all servers
 $serverInfoList = [];
+$serverCountList = [];
 foreach ($serverList as $serverType => $serverList) {
+    $serverCountList[$serverType] = count($serverList);
     foreach ($serverList as $srvInfo) {
         $baseUri = $srvInfo['base_uri'];
         $serverHost = parse_url($baseUri, PHP_URL_HOST);
@@ -272,6 +274,28 @@ footer {
     </style>
 </head>
 <body>
+<h1>eduVPN Server Count</h1>
+<table>
+<thead>
+<tr><th>Type</th><th>#Servers</th></tr>
+</thead>
+<tbody>
+<?php foreach ($serverCountList as $serverType => $serverCount): ?>
+    <tr>
+        <th>
+<?php if ('secure_internet' === $serverType): ?>
+            <span title="Secure Internet">🌍 Secure Internet</span>
+<?php elseif ('institute_access' === $serverType): ?>
+            <span title="Institute Access">🏛️ Institute Access</span>
+<?php else: ?>
+            <span title="Alien">👽 Alien</span>
+<?php endif; ?>
+        </th>
+        <td><?=$serverCount; ?></td>
+    </tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 <h1>eduVPN Server Info</h1>
 <p>The current <span class="success">STABLE</span> release is <?=$latestVersion; ?>.</p>
 <table>
