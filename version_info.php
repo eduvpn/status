@@ -281,6 +281,7 @@ footer {
 </thead>
 <tbody>
 <?php foreach ($serverCountList as $serverType => $serverCount): ?>
+<?php if (0 !== $serverCount): ?>
     <tr>
         <th>
 <?php if ('secure_internet' === $serverType): ?>
@@ -293,6 +294,7 @@ footer {
         </th>
         <td><?=$serverCount; ?></td>
     </tr>
+<?php endif; ?>
 <?php endforeach; ?>
 </tbody>
 </table>
