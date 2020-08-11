@@ -9,7 +9,7 @@
 
 // set this to the latest version of vpn-user-portal
 // @see https://github.com/eduvpn/vpn-user-portal/releases
-$latestVersion = '2.2.8';
+$latestVersion = '2.3.3';
 
 // discovery files
 $discoFiles = [
@@ -170,7 +170,17 @@ foreach ($serverList as $serverType => $serverList) {
             $responseHeaderList = [];
             $infoJson = getUrl($baseUri.'info.json', $responseHeaderList);
             $infoData = json_decode($infoJson, true);
-            $serverInfo['v'] = array_key_exists('v', $infoData) ? $infoData['v'] : '?';
+            $baseVersion = '?';
+            $versionString = '?';
+            if (array_key_exists('v', $infoData)) {
+                $baseVersion = $infoData['v'];
+                $versionString = $infoData['v'];
+                if (false !== $dashPos = strpos($versionString, '-')) {
+                    $baseVersion = substr($versionString, 0, $dashPos);
+                }
+            }
+            $serverInfo['v'] = $baseVersion;
+            $serverInfo['vDisplay'] = $versionString;
             foreach ($responseHeaderList as $responseHeader) {
                 if (0 === stripos($responseHeader, 'Server: ')) {
                     $serverInfo['osRelease'] = determineOsRelease($responseHeader);
@@ -346,11 +356,11 @@ footer {
 <?php if ('?' === $serverInfo['v']): ?>
             <span class="warning">?</span>
 <?php elseif (0 === strnatcmp($serverInfo['v'], $latestVersion)): ?>
-            <span class="success"><?=$serverInfo['v']; ?></span>
+            <span class="success"><?=$serverInfo['vDisplay']; ?></span>
 <?php elseif (0 > strnatcmp($serverInfo['v'], $latestVersion)): ?>
-            <span class="warning"><?=$serverInfo['v']; ?></span>
+            <span class="warning"><?=$serverInfo['vDisplay']; ?></span>
 <?php else: ?>
-            <span class="awesome"><?=$serverInfo['v']; ?></span>
+            <span class="awesome"><?=$serverInfo['vDisplay']; ?></span>
 <?php endif; ?>
 <?php endif; ?>
         </td>
