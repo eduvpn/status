@@ -40,7 +40,7 @@ usort($otherServerList, function ($a, $b) {
  *
  * @return string
  */
-function getUrl($u, &$responseHeaders = [])
+function getUrl($u)
 {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $u);
@@ -49,16 +49,6 @@ function getUrl($u, &$responseHeaders = [])
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-    curl_setopt(
-        $ch,
-        CURLOPT_HEADERFUNCTION,
-        function ($ch, $headerString) use (&$responseHeaders) {
-            $responseHeaders[] = $headerString;
-
-            return strlen($headerString);
-        }
-    );
-
     if (false === $responseData = curl_exec($ch)) {
         $errorMessage = curl_error($ch);
         curl_close($ch);
@@ -67,22 +57,6 @@ function getUrl($u, &$responseHeaders = [])
     curl_close($ch);
 
     return $responseData;
-}
-
-/**
- * @param string $serverHeaderKey
- *
- * @return string|null
- */
-function determineOsRelease($serverHeaderKey)
-{
-    foreach (['CentOS', 'Debian', 'Fedora', 'Red Hat Enterprise Linux'] as $osRelease) {
-        if (false !== strpos($serverHeaderKey, $osRelease)) {
-            return $osRelease;
-        }
-    }
-
-    return null;
 }
 
 /**
@@ -167,8 +141,7 @@ foreach ($serverList as $serverType => $serverList) {
             'support_contact' => $srvInfo['support_contact'],
         ];
         try {
-            $responseHeaderList = [];
-            $infoJson = getUrl($baseUri.'info.json', $responseHeaderList);
+            $infoJson = getUrl($baseUri.'info.json');
             $infoData = json_decode($infoJson, true);
             $baseVersion = '?';
             $versionString = '?';
@@ -181,11 +154,6 @@ foreach ($serverList as $serverType => $serverList) {
             }
             $serverInfo['v'] = $baseVersion;
             $serverInfo['vDisplay'] = $versionString;
-            foreach ($responseHeaderList as $responseHeader) {
-                if (0 === stripos($responseHeader, 'Server: ')) {
-                    $serverInfo['osRelease'] = determineOsRelease($responseHeader);
-                }
-            }
         } catch (RuntimeException $e) {
             $serverInfo['errMsg'] = $e->getMessage();
         }
@@ -316,7 +284,6 @@ footer {
         <th></th>
         <th>Server FQDN</th>
         <th>Version</th>
-        <th>OS</th>
         <th>Support</th>
     </tr>
 </thead>
@@ -364,14 +331,7 @@ footer {
 <?php endif; ?>
 <?php endif; ?>
         </td>
-        <td>
-<?php if (null === $serverInfo['osRelease']): ?>
-            <span class="fade">?</span>
-<?php else: ?>
-            <span><?=$serverInfo['osRelease']; ?></span>
-<?php endif; ?>
-        </td>
-        <td>
+            <td>
 <?php if (0 !== count($serverInfo['support_contact'])): ?>
             <ul>
 <?php foreach ($serverInfo['support_contact'] as $supportContact): ?>
