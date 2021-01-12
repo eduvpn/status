@@ -33,7 +33,44 @@ if (file_exists('other_server_list.txt')) {
     }
 }
 
-// XXX fix ordering of servers in list! first by server_type, then by TLD
+usort($serverList, function ($a, $b) {
+    if ($a['server_type'] === $b['server_type']) {
+        // same server type, sort by TLD
+        return strcmp(getTld($a['base_url']), getTld($b['base_url']));
+    }
+
+    // make sure "Secure Internet" is on top
+    if ('secure_internet' === $a['server_type']) {
+        return -1;
+    }
+    if ('secure_internet' === $b['server_type']) {
+        return 1;
+    }
+
+    // make sure "Alien" is at the bottom
+    if ('alien' === $a['server_type']) {
+        return 1;
+    }
+    if ('alien' === $b['server_type']) {
+        return -1;
+    }
+
+    return strcmp($a['server_type'], $b['server_type']);
+});
+
+/**
+ * @param string $baseUrl
+ *
+ * @return string
+ */
+function getTld($baseUrl)
+{
+    // remove trailing "/"
+    $baseUrl = substr($baseUrl, 0, -1);
+    $hostParts = explode('.', $baseUrl);
+
+    return $hostParts[count($hostParts) - 1];
+}
 
 /**
  * @param string $u
