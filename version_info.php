@@ -17,6 +17,7 @@ $discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
 
 $mailTo = null;
 //$mailTo = 'fkooman@tuxed.net';
+$mailFrom = 'info@example.org';
 
 $serverList = [];
 if (null !== $discoUrl) {
@@ -161,16 +162,17 @@ function removeUriPrefix($uriStr)
  *
  * @return void
  */
-function mailErrorDiff($mailTo, array $errorList)
+function mailErrorDiff($mailTo, $mailFrom, array $errorList)
 {
+    $errorHistoryFile = __DIR__.'/error_history.dat';
     $newError = [];
     $changedError = [];
     $resolvedError = [];
 
     $errorHistory = [];
-    if (file_exists('error_history.dat')) {
+    if (file_exists($errorHistoryFile)) {
         // we have previous errors!
-        $errorHistory = unserialize(file_get_contents('error_history.dat'));
+        $errorHistory = unserialize(file_get_contents($errorHistoryFile));
     }
 
     // check if we already knew about the errors in the current error list...
@@ -198,26 +200,42 @@ function mailErrorDiff($mailTo, array $errorList)
         }
     }
 
-    file_put_contents('error_history.dat', serialize($errorList));
+    file_put_contents($errorHistoryFile, serialize($errorList));
 
     if (0 === count($newError) && 0 === count($changedError) && 0 === count($resolvedError)) {
         // nothing changed, do nothing
         return;
     }
 
+    $mailMessage = '';
+    if (0 !== count($newError)) {
+        $mailMessage .= '# **New Errors**'."\r\n\r\n";
+        foreach ($newError as $k => $v) {
+            $mailMessage .= $k.': '.$v."\r\n";
+        }
+        $mailMessage .= "\r\n";
+    }
+    if (0 !== count($changedError)) {
+        $mailMessage .= '# **Changed Errors**'."\r\n\r\n";
+        foreach ($changedError as $k => $v) {
+            $mailMessage .= $k.': '.$v."\r\n";
+        }
+        $mailMessage .= "\r\n";
+    }
+    if (0 !== count($resolvedError)) {
+        $mailMessage .= '# **Resolved Errors**'."\r\n\r\n";
+        foreach ($resolvedError as $k => $v) {
+            $mailMessage .= $k.': '.$v."\r\n";
+        }
+        $mailMessage .= "\r\n";
+    }
+
     // mail the report
     mail(
         $mailTo,
         '[REPORT] eduVPN Server Status Changed',
-        var_export(
-            [
-                'newError' => $newError,
-                'changedError' => $changedError,
-                'resolvedError' => $resolvedError,
-            ],
-            true
-        ),
-        "From: info@example.org\r\nContent-Type: text/plain"
+        $mailMessage,
+        "From: $mailFrom\r\nContent-Type: text/plain"
     );
 }
 
@@ -271,7 +289,7 @@ foreach ($serverList as $srvInfo) {
 }
 
 if (null !== $mailTo) {
-    mailErrorDiff($mailTo, $errorList);
+    mailErrorDiff($mailTo, $mailFrom, $errorList);
 }
 
 $dateTime = new DateTime();
