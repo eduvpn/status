@@ -11,29 +11,29 @@
 // @see https://github.com/eduvpn/vpn-user-portal/releases
 $latestVersion = '2.3.6';
 
-// discovery files
-$discoFiles = [
-    'secure_internet' => 'https://static.eduvpn.nl/disco/secure_internet.json',
-    'institute_access' => 'https://static.eduvpn.nl/disco/institute_access.json',
-];
+// discovery URL
+$discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
+
+$serverList = [];
+if (null !== $discoUrl) {
+    $serverList = json_decode(getUrl($discoUrl), true)['server_list'];
+}
 
 // other servers not part of any discovery file
-$otherServerList = [];
+//$otherServerList = [];
 if (file_exists('other_server_list.txt')) {
-    $otherBaseUriList = explode("\n", trim(file_get_contents('other_server_list.txt')));
-    foreach ($otherBaseUriList as $otherBaseUri) {
-        $otherServerList[] = [
-            'base_uri' => $otherBaseUri,
-            'display_name' => parse_url($otherBaseUri, PHP_URL_HOST),
+    $otherBaseUrlList = explode("\n", trim(file_get_contents('other_server_list.txt')));
+    foreach ($otherBaseUrlList as $otherBaseUrl) {
+        $serverList[] = [
+            'base_url' => $otherBaseUrl,
+            'server_type' => 'alien',
+            'display_name' => parse_url($otherBaseUrl, PHP_URL_HOST),
             'support_contact' => [],
         ];
     }
 }
 
-// sort otherServerList by TLD
-usort($otherServerList, function ($a, $b) {
-    return strcmp(strrev($a['base_uri']), strrev($b['base_uri']));
-});
+// XXX fix ordering of servers in list! first by server_type, then by TLD
 
 /**
  * @param string $u
@@ -72,8 +72,11 @@ function getUrl($u)
  */
 function getDisplayName(array $serverInstance)
 {
+    if (array_key_exists('country_code', $serverInstance)) {
+        return $serverInstance['country_code'];
+    }
     if (!array_key_exists('display_name', $serverInstance)) {
-        return $serverInstance['base_uri'];
+        return $serverInstance['base_url'];
     }
     if (!is_array($serverInstance['display_name'])) {
         return $serverInstance['display_name'];
@@ -102,72 +105,51 @@ function removeUriPrefix($uriStr)
     return $uriStr;
 }
 
-$serverList = [];
-// extract the "base_uri" from all discovery files
-foreach ($discoFiles as $serverType => $discoFile) {
-    if (!array_key_exists($serverType, $serverList)) {
-        $serverList[$serverType] = [];
-    }
-
-    try {
-        $discoJson = getUrl($discoFile);
-        $discoData = json_decode($discoJson, true);
-        foreach ($discoData['instances'] as $serverInstance) {
-            $serverList[$serverType][] = [
-                'base_uri' => $serverInstance['base_uri'],
-                'display_name' => getDisplayName($serverInstance),
-                'support_contact' => array_key_exists('support_contact', $serverInstance) ? $serverInstance['support_contact'] : [],
-            ];
-        }
-    } catch (RuntimeException $e) {
-        // do nothing
-    }
-}
-
-// add the other servers to the list as well
-$serverList['other'] = $otherServerList;
-
 // now retrieve the info.json file from all servers
 $serverInfoList = [];
-$serverCountList = [];
-foreach ($serverList as $serverType => $serverList) {
-    $serverCountList[$serverType] = count($serverList);
-    foreach ($serverList as $srvInfo) {
-        $baseUri = $srvInfo['base_uri'];
-        $serverHost = parse_url($baseUri, PHP_URL_HOST);
-        $hasIpFour = checkdnsrr($serverHost, 'A');
-        $hasIpSix = checkdnsrr($serverHost, 'AAAA');
-        $serverInfo = [
+$serverCountList = [
+    'secure_internet' => 0,
+    'institute_access' => 0,
+    'alien' => 0,
+];
+foreach ($serverList as $srvInfo) {
+    $baseUrl = $srvInfo['base_url'];
+    $serverHost = parse_url($baseUrl, PHP_URL_HOST);
+    $hasIpFour = checkdnsrr($serverHost, 'A');
+    $hasIpSix = checkdnsrr($serverHost, 'AAAA');
+    $srvInfo = array_merge(
+        $srvInfo,
+        [
             'v' => null,
             'h' => $serverHost,
             'hasIpFour' => $hasIpFour,
             'hasIpSix' => $hasIpSix,
-            'osRelease' => null,
-            'serverType' => $serverType,
             'errMsg' => null,
-            'displayName' => $srvInfo['display_name'],
-            'support_contact' => $srvInfo['support_contact'],
-        ];
-        try {
-            $infoJson = getUrl($baseUri.'info.json');
-            $infoData = json_decode($infoJson, true);
-            $baseVersion = '?';
-            $versionString = '?';
-            if (array_key_exists('v', $infoData)) {
-                $baseVersion = $infoData['v'];
-                $versionString = $infoData['v'];
-                if (false !== $dashPos = strpos($versionString, '-')) {
-                    $baseVersion = substr($versionString, 0, $dashPos);
-                }
-            }
-            $serverInfo['v'] = $baseVersion;
-            $serverInfo['vDisplay'] = $versionString;
-        } catch (RuntimeException $e) {
-            $serverInfo['errMsg'] = $e->getMessage();
-        }
+            'displayName' => getDisplayName($srvInfo),
+        ]
+    );
 
-        $serverInfoList[$baseUri] = $serverInfo;
+    ++$serverCountList[$srvInfo['server_type']];
+
+    try {
+        $infoJson = getUrl($baseUrl.'info.json');
+        $infoData = json_decode($infoJson, true);
+        $baseVersion = '?';
+        $versionString = '?';
+        if (array_key_exists('v', $infoData)) {
+            $baseVersion = $infoData['v'];
+            $versionString = $infoData['v'];
+            if (false !== $dashPos = strpos($versionString, '-')) {
+                $baseVersion = substr($versionString, 0, $dashPos);
+            }
+        }
+        $srvInfo['v'] = $baseVersion;
+        $srvInfo['vDisplay'] = $versionString;
+    } catch (RuntimeException $e) {
+        $srvInfo['errMsg'] = $e->getMessage();
     }
+
+    $serverInfoList[$baseUrl] = $srvInfo;
 }
 
 $dateTime = new DateTime();
@@ -296,19 +278,19 @@ footer {
     </tr>
 </thead>
 <tbody>
-<?php foreach ($serverInfoList as $baseUri => $serverInfo): ?>
+<?php foreach ($serverInfoList as $baseUrl => $serverInfo): ?>
     <tr>
         <td>
-<?php if ('secure_internet' === $serverInfo['serverType']): ?>
+<?php if ('secure_internet' === $serverInfo['server_type']): ?>
             <span title="Secure Internet">🌍</span>
-<?php elseif ('institute_access' === $serverInfo['serverType']): ?>
+<?php elseif ('institute_access' === $serverInfo['server_type']): ?>
             <span title="Institute Access">🏛️</span>
 <?php else: ?>
             <span title="Alien">👽</span>
 <?php endif; ?>
         </td>
         <td>
-            <a href="<?=$baseUri; ?>"><?=$serverInfo['displayName']; ?></a> <small>[<?=$serverInfo['h']; ?>]</small>
+            <a href="<?=$baseUrl; ?>"><?=$serverInfo['displayName']; ?></a> <small>[<?=$serverInfo['h']; ?>]</small>
 <?php if ($serverInfo['hasIpFour']): ?>
                 <sup><span class="success" title="IPv4">4</span></sup>
 <?php else: ?>
@@ -340,7 +322,7 @@ footer {
 <?php endif; ?>
         </td>
             <td>
-<?php if (0 !== count($serverInfo['support_contact'])): ?>
+<?php if (array_key_exists('support_contact', $serverInfo) && 0 !== count($serverInfo['support_contact'])): ?>
             <ul>
 <?php foreach ($serverInfo['support_contact'] as $supportContact): ?>
             <li><a href="<?=$supportContact; ?>"><?=removeUriPrefix($supportContact); ?></a></li>
