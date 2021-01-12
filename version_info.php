@@ -42,21 +42,29 @@ usort($otherServerList, function ($a, $b) {
  */
 function getUrl($u)
 {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $u);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-    if (false === $responseData = curl_exec($ch)) {
-        $errorMessage = curl_error($ch);
+    $maxTry = 2;
+    $errorMessage = [];
+    for ($i = 0; $i < $maxTry; ++$i) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $u);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+        if (false === $responseData = curl_exec($ch)) {
+            $errorMessage[] = curl_error($ch);
+            curl_close($ch);
+            // try again...
+            continue;
+        }
         curl_close($ch);
-        throw new RuntimeException('ERROR: '.$errorMessage);
-    }
-    curl_close($ch);
 
-    return $responseData;
+        return $responseData;
+    }
+
+    // didn't work after $maxTry attempts
+    throw new RuntimeException('ERROR: '.implode(', ', $errorMessage));
 }
 
 /**
