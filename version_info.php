@@ -217,7 +217,7 @@ function mailErrorDiff($mailTo, array $errorList)
             ],
             true
         ),
-        "From: noreply@eduvpn.org\r\nTo: fkooman@tuxed.net\r\nContent-Type: text/plain"
+        "From: info@example.org\r\nContent-Type: text/plain"
     );
 }
 
