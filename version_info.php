@@ -19,6 +19,12 @@ $mailTo = null;
 //$mailTo = 'fkooman@tuxed.net';
 $mailFrom = 'info@example.org';
 
+// remove notoriously unreliable servers from the error list to prevent mails
+// (just) for this server...
+$doNotMonitorList = [
+//    'https://eduvpn1.eduvpn.de/'
+];
+
 $serverList = [];
 if (null !== $discoUrl) {
     $serverList = json_decode(getUrl($discoUrl), true)['server_list'];
@@ -289,6 +295,12 @@ foreach ($serverList as $srvInfo) {
 }
 
 if (null !== $mailTo) {
+    // remove notoriously unreliable servers from the error list
+    foreach ($doNotMonitorList as $baseUrl) {
+        if (array_key_exists($baseUrl, $errorList)) {
+            unset($errorList[$baseUrl]);
+        }
+    }
     mailErrorDiff($mailTo, $mailFrom, $errorList);
 }
 
