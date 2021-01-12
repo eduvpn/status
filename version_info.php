@@ -1,7 +1,7 @@
 <?php
 
 // *** Source Formatting
-// $ php-cs-fixer fix --rules @Symfony version_info.php
+// $ php-cs-fixer fix --rules @Symfony,-echo_tag_syntax,-no_alternative_syntax version_info.php
 //
 // *** Cron
 // $ crontab -l
