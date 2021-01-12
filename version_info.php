@@ -15,6 +15,9 @@ $latestVersion = '2.3.6';
 $discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
 //$discoUrl = null;
 
+$mailTo = null;
+//$mailTo = 'fkooman@tuxed.net';
+
 $serverList = [];
 if (null !== $discoUrl) {
     $serverList = json_decode(getUrl($discoUrl), true)['server_list'];
@@ -153,6 +156,71 @@ function removeUriPrefix($uriStr)
     return $uriStr;
 }
 
+/**
+ * @param string $mailTo
+ *
+ * @return void
+ */
+function mailErrorDiff($mailTo, array $errorList)
+{
+    $newError = [];
+    $changedError = [];
+    $resolvedError = [];
+
+    $errorHistory = [];
+    if (file_exists('error_history.dat')) {
+        // we have previous errors!
+        $errorHistory = unserialize(file_get_contents('error_history.dat'));
+    }
+
+    // check if we already knew about the errors in the current error list...
+    foreach ($errorList as $baseUrl => $errorMsg) {
+        if (!array_key_exists($baseUrl, $errorHistory)) {
+            // we didn't know about it
+            $newError[$baseUrl] = $errorMsg;
+            continue;
+        }
+
+        if ($errorMsg === $errorHistory[$baseUrl]) {
+            // error remained the same
+            continue;
+        }
+
+        // the error message changed
+        $changedError[$baseUrl] = $errorMsg;
+    }
+
+    // check for old errors that are now resolved...
+    foreach ($errorHistory as $baseUrl => $errorMsg) {
+        if (!array_key_exists($baseUrl, $errorList)) {
+            // resolved
+            $resolvedError[$baseUrl] = $errorMsg;
+        }
+    }
+
+    file_put_contents('error_history.dat', serialize($errorList));
+
+    if (0 === count($newError) && 0 === count($changedError) && 0 === count($resolvedError)) {
+        // nothing changed, do nothing
+        return;
+    }
+
+    // mail the report
+    mail(
+        $mailTo,
+        '[REPORT] eduVPN Server Status Changed',
+        var_export(
+            [
+                'newError' => $newError,
+                'changedError' => $changedError,
+                'resolvedError' => $resolvedError,
+            ],
+            true
+        ),
+        "From: noreply@eduvpn.org\r\nTo: fkooman@tuxed.net\r\nContent-Type: text/plain"
+    );
+}
+
 // now retrieve the info.json file from all servers
 $errorList = [];
 $serverInfoList = [];
@@ -202,7 +270,9 @@ foreach ($serverList as $srvInfo) {
     $serverInfoList[$baseUrl] = $srvInfo;
 }
 
-// error_log(var_export($errorList, true));
+if (null !== $mailTo) {
+    mailErrorDiff($mailTo, $errorList);
+}
 
 $dateTime = new DateTime();
 ?>
