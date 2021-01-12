@@ -13,6 +13,7 @@ $latestVersion = '2.3.6';
 
 // discovery URL
 $discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
+//$discoUrl = null;
 
 $serverList = [];
 if (null !== $discoUrl) {
@@ -97,7 +98,10 @@ function getUrl($u)
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
         if (false === $responseData = curl_exec($ch)) {
-            $errorMessage[] = curl_error($ch);
+            $errorMsg = curl_error($ch);
+            if (!in_array($errorMsg, $errorMessage)) {
+                $errorMessage[] = $errorMsg;
+            }
             curl_close($ch);
             // try again...
             continue;
@@ -150,6 +154,7 @@ function removeUriPrefix($uriStr)
 }
 
 // now retrieve the info.json file from all servers
+$errorList = [];
 $serverInfoList = [];
 $serverCountList = [
     'secure_internet' => 0,
@@ -191,10 +196,13 @@ foreach ($serverList as $srvInfo) {
         $srvInfo['vDisplay'] = $versionString;
     } catch (RuntimeException $e) {
         $srvInfo['errMsg'] = $e->getMessage();
+        $errorList[$baseUrl] = $e->getMessage();
     }
 
     $serverInfoList[$baseUrl] = $srvInfo;
 }
+
+// error_log(var_export($errorList, true));
 
 $dateTime = new DateTime();
 ?>
