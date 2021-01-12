@@ -36,7 +36,14 @@ if (file_exists('other_server_list.txt')) {
 usort($serverList, function ($a, $b) {
     if ($a['server_type'] === $b['server_type']) {
         // same server type, sort by TLD
-        return strcmp(getTld($a['base_url']), getTld($b['base_url']));
+        $tldA = getTld($a['base_url']);
+        $tldB = getTld($b['base_url']);
+        if ($tldA === $tldB) {
+            // if both TLDs are the same, sort by display name
+            return strcmp(getDisplayName($a), getDisplayName($b));
+        }
+
+        return strcmp($tldA, $tldB);
     }
 
     // make sure "Secure Internet" is on top
