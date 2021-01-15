@@ -172,7 +172,6 @@ function mailErrorDiff($mailTo, $mailFrom, array $errorList)
 {
     $errorHistoryFile = __DIR__.'/error_history.dat';
     $newError = [];
-    $changedError = [];
     $resolvedError = [];
 
     $errorHistory = [];
@@ -186,16 +185,7 @@ function mailErrorDiff($mailTo, $mailFrom, array $errorList)
         if (!array_key_exists($baseUrl, $errorHistory)) {
             // we didn't know about it
             $newError[$baseUrl] = $errorMsg;
-            continue;
         }
-
-        if ($errorMsg === $errorHistory[$baseUrl]) {
-            // error remained the same
-            continue;
-        }
-
-        // the error message changed
-        $changedError[$baseUrl] = $errorMsg;
     }
 
     // check for old errors that are now resolved...
@@ -208,30 +198,23 @@ function mailErrorDiff($mailTo, $mailFrom, array $errorList)
 
     file_put_contents($errorHistoryFile, serialize($errorList));
 
-    if (0 === count($newError) && 0 === count($changedError) && 0 === count($resolvedError)) {
+    if (0 === count($newError) && 0 === count($resolvedError)) {
         // nothing changed, do nothing
         return;
     }
 
     $mailMessage = '';
     if (0 !== count($newError)) {
-        $mailMessage .= '# **New Errors**'."\r\n\r\n";
+        $mailMessage .= '*New Errors*'."\r\n\r\n";
         foreach ($newError as $k => $v) {
-            $mailMessage .= $k.': '.$v."\r\n";
-        }
-        $mailMessage .= "\r\n";
-    }
-    if (0 !== count($changedError)) {
-        $mailMessage .= '# **Changed Errors**'."\r\n\r\n";
-        foreach ($changedError as $k => $v) {
-            $mailMessage .= $k.': '.$v."\r\n";
+            $mailMessage .= '    '.$k.': '.$v."\r\n";
         }
         $mailMessage .= "\r\n";
     }
     if (0 !== count($resolvedError)) {
-        $mailMessage .= '# **Resolved Errors**'."\r\n\r\n";
+        $mailMessage .= '*Resolved Errors*'."\r\n\r\n";
         foreach ($resolvedError as $k => $v) {
-            $mailMessage .= $k.': '.$v."\r\n";
+            $mailMessage .= '    '.$k."\r\n";
         }
         $mailMessage .= "\r\n";
     }
@@ -239,7 +222,7 @@ function mailErrorDiff($mailTo, $mailFrom, array $errorList)
     // mail the report
     mail(
         $mailTo,
-        '[REPORT] eduVPN Server Status Changed',
+        '[eduVPN] Server Status Notification',
         $mailMessage,
         "From: $mailFrom\r\nContent-Type: text/plain"
     );
