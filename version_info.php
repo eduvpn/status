@@ -97,7 +97,7 @@ function getTld($baseUrl)
  */
 function getUrl($u)
 {
-    $maxTry = 2;
+    $maxTry = 3;
     $errorMessage = [];
     for ($i = 0; $i < $maxTry; ++$i) {
         $ch = curl_init();
@@ -113,7 +113,8 @@ function getUrl($u)
                 $errorMessage[] = $errorMsg;
             }
             curl_close($ch);
-            // try again...
+            // sleep 3 seconds before trying again...
+            sleep(3);
             continue;
         }
         curl_close($ch);
