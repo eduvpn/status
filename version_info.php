@@ -108,9 +108,9 @@ function getUrl($u)
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
         if (false === $responseData = curl_exec($ch)) {
-            $errorMsg = curl_error($ch);
-            if (!in_array($errorMsg, $errorMessage)) {
-                $errorMessage[] = $errorMsg;
+            $errorNo = curl_errno($ch);
+            if (!array_key_exists($errorNo, $errorMessage)) {
+                $errorMessage[$errorNo] = curl_error($ch);
             }
             curl_close($ch);
             // sleep 3 seconds before trying again...
