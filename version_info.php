@@ -107,19 +107,19 @@ function getUrl($u)
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-        if (false === $responseData = curl_exec($ch)) {
-            $errorNo = curl_errno($ch);
-            if (!array_key_exists($errorNo, $errorMessage)) {
-                $errorMessage[$errorNo] = curl_error($ch);
-            }
+        if (false !== $responseData = curl_exec($ch)) {
+            // success!
             curl_close($ch);
-            // sleep 3 seconds before trying again...
-            sleep(3);
-            continue;
+
+            return $responseData;
+        }
+        $errorNo = curl_errno($ch);
+        if (!array_key_exists($errorNo, $errorMessage)) {
+            $errorMessage[$errorNo] = curl_error($ch);
         }
         curl_close($ch);
-
-        return $responseData;
+        // sleep 3 seconds before trying again...
+        sleep(3);
     }
 
     // didn't work after $maxTry attempts
