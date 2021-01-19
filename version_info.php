@@ -314,7 +314,7 @@ $dateTime = new DateTime();
 <?php foreach ($serverCountList as $serverType => $serverCount): ?>
 <?php if (0 !== $serverCount): ?>
     <tr>
-        <th>
+        <td>
 <?php if ('secure_internet' === $serverType): ?>
             <span title="Secure Internet">🌍 Secure Internet</span>
 <?php elseif ('institute_access' === $serverType): ?>
@@ -322,7 +322,7 @@ $dateTime = new DateTime();
 <?php else: ?>
             <span title="Alien">👽 Alien</span>
 <?php endif; ?>
-        </th>
+        </td>
         <td><?=$serverCount; ?></td>
     </tr>
 <?php endif; ?>
