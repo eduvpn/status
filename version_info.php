@@ -12,8 +12,8 @@
 $latestVersion = '2.3.6';
 
 // discovery URL
-$discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
-//$discoUrl = null;
+//$discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
+$discoUrl = null;
 
 $mailTo = null;
 //$mailTo = 'fkooman@tuxed.net';
@@ -297,88 +297,15 @@ $dateTime = new DateTime();
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>eduVPN Server Info</title>
-    <style>
-body {
-    font-family: sans-serif;
-    max-width: 50em;
-    margin: 1em auto;
-    color: #444;
-}
-
-small {
-    font-size: 75%;
-    color: #888;
-}
-
-code {
-    font-size: 125%;
-}
-
-h1 {
-    text-align: center;
-}
-
-table {
-    border: 1px solid #ccc;
-    width: 100%;
-    border-collapse: collapse;
-}
-
-table th, table td {
-    padding: 0.8em 0.5em;
-}
-
-table thead th {
-    text-align: left;
-}
-
-table tbody tr:nth-child(odd) {
-    background-color: #f8f8f8;
-}
-
-ul {
-    margin: 0;
-    padding: 0 1em;
-}
-
-p, sup {
-    font-size: 85%;
-}
-
-a {
-    color: #444;
-}
-
-span.error {
-    color: darkred;
-}
-
-span.success {
-    color: darkgreen;
-}
-
-span.fade {
-    color: lightgray;
-}
-
-span.awesome {
-    color: lightgreen;
-}
-
-span.warning {
-    color: darkorange;
-}
-
-footer {
-    margin-top: 1em;
-    font-size: 85%;
-    color: #888;
-    text-align: center;
-}
-    </style>
+    <style><?=file_get_contents(__DIR__.'/simple.css'); ?></style>
+    <!-- <link href="simple.css" rel="stylesheet"> -->
 </head>
 <body>
-<h1>eduVPN Server Count</h1>
+<header>
+<h1>eduVPN Server Status</h1>
+<p>Status of the eduVPN servers included in the official eduVPN apps.</p>
+</header>
+<main>
 <table>
 <thead>
 <tr><th>Type</th><th>#Servers</th></tr>
@@ -402,7 +329,7 @@ footer {
 <?php endforeach; ?>
 </tbody>
 </table>
-<h1>eduVPN Server Info</h1>
+<h3>Server Info</h3>
 <p>The current <span class="success">STABLE</span> release is <?=$latestVersion; ?>.</p>
 <table>
 <thead>
@@ -479,6 +406,7 @@ the first release reporting the version. When the version is
 <span class="error">Error</span>, it means the server could not be reached, or 
 there was problem establishing the (TLS) connection.
 </p>
+</main>
 <footer>
 Generated on <?=$dateTime->format(DateTime::ATOM); ?>
 </footer>
