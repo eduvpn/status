@@ -409,3 +409,15 @@ span.awesome {
 span.warning {
     color: darkorange;
 }
+
+dt {
+	font-weight: bold;
+}
+
+td {
+	vertical-align: top;
+}
+
+dl {
+	margin: 0;
+}

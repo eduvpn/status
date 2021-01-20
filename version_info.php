@@ -296,14 +296,16 @@ $dateTime = new DateTime();
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>eduVPN Server Info</title>
+    <title>Server Status</title>
     <style><?=file_get_contents(__DIR__.'/simple.css'); ?></style>
     <!-- <link href="simple.css" rel="stylesheet"> -->
 </head>
 <body>
 <header>
-<h1>eduVPN Server Status</h1>
-<p>Status of the eduVPN servers included in the official eduVPN apps.</p>
+<h1>Server Status</h1>
+<p>
+	Status of the Offical eduVPN Servers
+</p>
 </header>
 <main>
 <table>
@@ -329,17 +331,8 @@ $dateTime = new DateTime();
 <?php endforeach; ?>
 </tbody>
 </table>
-<h3>Server Info</h3>
 <p>The current <span class="success">STABLE</span> release is <?=$latestVersion; ?>.</p>
 <table>
-<thead>
-    <tr>
-        <th></th>
-        <th>Server FQDN</th>
-        <th>Version</th>
-        <th>Support</th>
-    </tr>
-</thead>
 <tbody>
 <?php foreach ($serverInfoList as $baseUrl => $serverInfo): ?>
     <tr>
@@ -366,6 +359,7 @@ $dateTime = new DateTime();
 <?php endif; ?>
         </td>
         <td>
+		<dl><dt>Version</dt><dd>        
 <?php if (null === $serverInfo['v']): ?>
 <?php if (null !== $serverInfo['errMsg']): ?>
             <span class="error" title="<?=htmlentities($serverInfo['errMsg']); ?>">Error</span>
@@ -383,17 +377,17 @@ $dateTime = new DateTime();
             <span class="awesome"><?=$serverInfo['vDisplay']; ?></span>
 <?php endif; ?>
 <?php endif; ?>
-        </td>
-            <td>
+	</dd>
 <?php if (array_key_exists('support_contact', $serverInfo) && 0 !== count($serverInfo['support_contact'])): ?>
-            <ul>
+            <dt>Support</dt>
+            <dd>
 <?php foreach ($serverInfo['support_contact'] as $supportContact): ?>
             <li><a href="<?=$supportContact; ?>"><?=removeUriPrefix($supportContact); ?></a></li>
 <?php endforeach; ?>
             </ul>
-<?php else: ?>
-            <span class="fade">?</span>
 <?php endif; ?>
+		</dd>
+	</dl>
         </td>
     </tr>
 <?php endforeach; ?>
