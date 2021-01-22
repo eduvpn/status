@@ -304,7 +304,7 @@ $dateTime = new DateTime();
 <header>
 <h1>Server Status</h1>
 <p>
-	Status of the Offical eduVPN Servers
+	Status of the eduVPN Servers
 </p>
 </header>
 <main>
