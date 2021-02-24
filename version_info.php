@@ -9,11 +9,11 @@
 
 // set this to the latest version of vpn-user-portal
 // @see https://github.com/eduvpn/vpn-user-portal/releases
-$latestVersion = '2.3.6';
+$latestVersion = '2.3.7';
 
 // discovery URL
 $discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
-//$discoUrl = null;
+$discoUrl = null;
 
 $mailTo = null;
 //$mailTo = 'fkooman@tuxed.net';
@@ -298,16 +298,16 @@ $dateTime = new DateTime();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Server Status</title>
     <style><?=file_get_contents(__DIR__.'/simple.css'); ?></style>
+    <style><?=file_get_contents(__DIR__.'/screen.css'); ?></style>
     <!-- <link href="simple.css" rel="stylesheet"> -->
+    <!-- <link href="screen.css" rel="stylesheet"> -->
 </head>
 <body>
 <header>
-<h1>Server Status</h1>
-<p>
-	Status of the eduVPN Servers
-</p>
+<h1>eduVPN</h1>
 </header>
 <main>
+<h2>Server Status</h2>
 <table>
 <thead>
 <tr><th>Type</th><th>#Servers</th></tr>

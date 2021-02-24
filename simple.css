@@ -23,6 +23,9 @@
   --accent: #0D47A1;
   --accent-light: #90CAF9;
   --code: #D81B60;
+  --preformatted: #444;
+  --marked: #FFDD33;
+  --disabled: #EFEFEF;
 }
 
 /* Dark theme */
@@ -36,9 +39,11 @@
     --accent: #FFB300;
     --accent-light: #FFECB3;
     --code: #F06292;
+    --preformatted: #CCC;
+    --disabled: #111;
   }
 
-  img {
+  img, video {
     opacity: .6;
   }
 }
@@ -91,6 +96,11 @@ header {
 header h1,
 header p {
   margin: 0;
+}
+
+/* Fix header line height when title wraps */
+header h1 {
+  line-height: 1.1;
 }
 
 /* Format navigation */
@@ -195,6 +205,16 @@ input[type="button"][disabled] {
 	cursor: not-allowed;
 }
 
+input:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  background: var(--disabled);
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
 /* Set the cursor to '?' while hovering over an abbreviation */
 abbr {
     cursor: help;
@@ -286,6 +306,9 @@ input {
 	box-shadow: none;
 	box-sizing: border-box;
   width: 60%;
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
 }
 
 /* Make the textarea wider than other inputs */
@@ -307,6 +330,11 @@ input[type="checkbox"], input[type="radio"]{
   width: auto;
 }
 
+/* do not show border around file selector button */
+input[type="file"] {
+  border: 0;
+}
+
 /* Without this any HTML using <fieldset> shows ugly borders and has additional padding/margin. (Issue #3) */
 fieldset {
   border: 0;
@@ -323,11 +351,12 @@ hr {
 }
 
 mark {
-	padding: 3px 6px;
-	background: var(--accent-light);
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: var(--marked);
 }
 
-main img {
+main img, main video {
   max-width: 100%;
   border-radius: 5px;
 }
@@ -360,64 +389,36 @@ cite {
 /* Use mono font for code like elements */
 code,
 pre,
+pre span,
 kbd,
 samp {
-	font-family: var(--mono-font);
-  color: var(--code);
+    font-size: 1.075rem;
+    font-family: var(--mono-font);
+    color: var(--code);
 }
 
 kbd {
-  border: 1px solid var(--code);
-	border-bottom: 3px solid var(--code);
-  border-radius: 5px;
-  padding: .1rem;
+    color: var(--preformatted);
+    border: 1px solid var(--preformatted);
+    border-bottom: 3px solid var(--preformatted);
+    border-radius: 5px;
+    padding: .1rem;
 }
 
 pre {
-	padding: 1rem 1.4rem;
-	max-width: 100%;
-	overflow: auto;
-  background: var(--accent-bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
+    padding: 1rem 1.4rem;
+    max-width: 100%;
+    overflow: auto;
+    color: var(--preformatted);
+    background: var(--accent-bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
 }
 
 /* Fix embedded code within pre */
 pre code {
-    color: var(--text);
+    color: var(--preformatted);
     background: none;
     margin: 0;
     padding: 0;
-}
-
-span.error {
-    color: darkred;
-}
-
-span.success {
-    color: darkgreen;
-}
-
-span.fade {
-    color: lightgray;
-}
-
-span.awesome {
-    color: lightgreen;
-}
-
-span.warning {
-    color: darkorange;
-}
-
-dt {
-	font-weight: bold;
-}
-
-td {
-	vertical-align: top;
-}
-
-dl {
-	margin: 0;
 }
