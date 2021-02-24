@@ -13,7 +13,7 @@ $latestVersion = '2.3.7';
 
 // discovery URL
 $discoUrl = 'https://disco.eduvpn.org/v2/server_list.json';
-$discoUrl = null;
+//$discoUrl = null;
 
 $mailTo = null;
 //$mailTo = 'fkooman@tuxed.net';
